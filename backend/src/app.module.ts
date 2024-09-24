@@ -2,6 +2,8 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { MongooseModule } from '@nestjs/mongoose';
+import * as dotenv from 'dotenv';
+
 
 @Module({
   imports: [
@@ -12,6 +14,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 })
 export class AppModule {}
 
+dotenv.config();
+
 
 /*
 
@@ -21,5 +25,13 @@ with the following code:
 MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/mydatabase?retryWrites=true&w=majority
 
 where <username> is your mongodb username and <password> is your mongodb password
+
+*/
+
+/*
+
+Also install dotenv to load environment variables using the following command:
+
+npm install dotenv
 
 */
