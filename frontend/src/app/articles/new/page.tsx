@@ -47,7 +47,7 @@ const NewArticleForm = () => {
 
   return (
     <div>
-      <h1>Submit a New Article</h1>
+      <p className="text-xl"><strong>Submit a New Article</strong></p><br />
       <form onSubmit={handleSubmit}>
         <label htmlFor="title">Title:</label>
         <input

@@ -10,7 +10,7 @@ const ArticlesPage = async () => {
 
   return (
     <div>
-      <h1>Submitted Articles</h1>
+      <p className="text-xl"><strong>Submitted Articles</strong></p><br />
       <ul>
         {articles.map((article: Article) => (
           <li key={article._id}>
@@ -18,7 +18,7 @@ const ArticlesPage = async () => {
             <strong>Authors:</strong> {article.authors}<br />
             <strong>Journal:</strong> {article.journal}<br />
             <strong>Year:</strong> {article.year}<br />
-            <strong>DOI:</strong> {article.doi}
+            <strong>DOI:</strong> {article.doi}<br /><br />
           </li>
         ))}
       </ul>
