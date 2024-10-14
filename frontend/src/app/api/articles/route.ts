@@ -1,31 +1,30 @@
 // src/app/api/articles/route.ts
-import { NextResponse } from "next/server";
-import { connectToDatabase } from "../../utils/mongodb"; // Your MongoDB connection utility
+import { connectToDatabase } from '../../utils/mongodb';
+import { NextResponse } from 'next/server';
 
-export async function POST(req: Request) {
+export async function POST(request: Request) {
+  const { title, authors, source, year, pages, doi } = await request.json();
+
+  if (!title || !authors || !source || !year || !pages || !doi) {
+    return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
+  }
+
+  const { db } = await connectToDatabase();
+
+  const article = {
+    title,
+    authors,
+    source,
+    year,
+    pages,
+    doi,
+  };
+
   try {
-    const body = await req.json();
-    const { title, authors, journal, year, doi } = body;
-
-    if (!title || !authors || !journal || !year || !doi) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
-
-    const { db } = await connectToDatabase();
-
-    const result = await db.collection("articles").insertOne({
-      title,
-      authors,
-      journal,
-      year,
-      doi,
-      status: "pending", // Mark as pending for moderation
-      createdAt: new Date(),
-    });
-
-    return NextResponse.json({ message: "Article submitted successfully", articleId: result.insertedId });
+    await db.collection('articles').insertOne(article);
+    return NextResponse.json({ message: 'Article created successfully' }, { status: 201 });
   } catch (error) {
-    console.error("Error submitting article:", error);
-    return NextResponse.json({ error: "Database error" }, { status: 500 });
+    console.error('Error creating article:', error);
+    return NextResponse.json({ message: 'Failed to create article' }, { status: 500 });
   }
 }
