@@ -1,5 +1,6 @@
-// src/app/articles/page.tsx
+// src/app/articles/page.tsx (Server Component)
 import { connectToDatabase } from '../utils/mongodb';
+import InteractiveButtons from './InteractiveButtons'; // Import the client component
 
 const ArticlesPage = async () => {
   const { db } = await connectToDatabase();
@@ -19,6 +20,7 @@ const ArticlesPage = async () => {
             <th>Pages</th>
             <th>DOI</th>
             <th>Status</th>
+            <th>Further Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -39,6 +41,9 @@ const ArticlesPage = async () => {
                   : article.doi}
               </td>
               <td>{article.status || "Pending"}</td>
+              <td>
+                <InteractiveButtons articleId={article._id.toString()} /> {/* Client Component */}
+              </td>
             </tr>
           ))}
         </tbody>
