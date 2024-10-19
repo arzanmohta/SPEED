@@ -1,10 +1,34 @@
-// src/app/articles/page.tsx (Server Component)
-import { connectToDatabase } from '../utils/mongodb';
-import InteractiveButtons from './InteractiveButtons'; // Import the client component
+// src/app/articles/page.tsx
+"use client"; // Ensure the component is a Client Component
 
-const ArticlesPage = async () => {
-  const { db } = await connectToDatabase();
-  const articles = await db.collection('articles').find().toArray();
+import { useEffect, useState } from 'react';
+import InteractiveButtons from './InteractiveButtons';
+
+const ArticlesPage = () => {
+  const [articles, setArticles] = useState([]);
+
+  // Fetch articles from the API on component mount
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        const response = await fetch('/api/articles');
+        if (!response.ok) {
+          throw new Error('Failed to fetch articles');
+        }
+        const data = await response.json();
+        setArticles(data);
+      } catch (error) {
+        console.error('Error fetching articles:', error);
+      }
+    };
+
+    fetchArticles();
+  }, []);
+
+  // Handle article deletion
+  const handleDelete = (id: string) => {
+    setArticles((prevArticles) => prevArticles.filter((article: any) => article._id.toString() !== id));
+  };
 
   return (
     <div style={{ padding: '20px', backgroundColor: '#000', color: '#fff' }}>
@@ -20,7 +44,7 @@ const ArticlesPage = async () => {
             <th>Pages</th>
             <th>DOI</th>
             <th>Status</th>
-            <th>Further Actions</th>
+            <th>Further Action</th>
           </tr>
         </thead>
         <tbody>
@@ -42,7 +66,7 @@ const ArticlesPage = async () => {
               </td>
               <td>{article.status || "Pending"}</td>
               <td>
-                <InteractiveButtons articleId={article._id.toString()} /> {/* Client Component */}
+                <InteractiveButtons articleId={article._id.toString()} onDelete={handleDelete} /> {/* Pass handleDelete */}
               </td>
             </tr>
           ))}
