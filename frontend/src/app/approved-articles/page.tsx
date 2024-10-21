@@ -1,9 +1,7 @@
-// src/app/articles/page.tsx
+// src/app/approved-articles/page.tsx
 "use client"; // Ensure the component is a Client Component
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link'; // Import Link to create navigation to Approved Articles page
-import InteractiveButtons from './InteractiveButtons';
 
 // Define the article interface
 interface Article {
@@ -17,51 +15,31 @@ interface Article {
   status: string;
 }
 
-const ArticlesPage = () => {
+const ApprovedArticlesPage = () => {
   const [articles, setArticles] = useState<Article[]>([]);
 
-  // Fetch articles from the API on component mount
+  // Fetch only approved articles from the API on component mount
   useEffect(() => {
-    const fetchArticles = async () => {
+    const fetchApprovedArticles = async () => {
       try {
-        const response = await fetch('/api/articles');
+        const response = await fetch('/api/articles?status=Approved'); // Query for only approved articles
         if (!response.ok) {
-          throw new Error('Failed to fetch articles');
+          throw new Error('Failed to fetch approved articles');
         }
         const data: Article[] = await response.json();
         setArticles(data);
       } catch (error) {
-        console.error('Error fetching articles:', error);
+        console.error('Error fetching approved articles:', error);
       }
     };
 
-    fetchArticles();
+    fetchApprovedArticles();
   }, []);
-
-  // Handle article status update (Approve/Reject)
-  const handleStatusUpdate = (id: string, status: string) => {
-    setArticles((prevArticles) =>
-      prevArticles.map((article) =>
-        article._id === id ? { ...article, status } : article
-      )
-    );
-  };
-
-  // Handle article deletion
-  const handleDelete = (id: string) => {
-    setArticles((prevArticles) => prevArticles.filter((article) => article._id !== id));
-  };
 
   return (
     <div style={{ padding: '20px', backgroundColor: '#000', color: '#fff' }}>
-      <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: 'bold' }}>Articles Index Page</h1>
-      <p>Page containing a table of articles:</p>
-
-      {/* Link to the Approved Articles page */}
-      <Link href="/approved-articles" style={{ color: '#4CAF50', textDecoration: 'none', marginBottom: '20px', display: 'inline-block' }}>
-        View Approved Articles
-      </Link>
-
+      <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: 'bold' }}>Approved Articles</h1>
+      <p>Page containing a table of approved articles:</p>
       <table style={{ tableLayout: 'fixed', width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
         <thead>
           <tr>
@@ -71,8 +49,6 @@ const ArticlesPage = () => {
             <th>Publication Year</th>
             <th>Pages</th>
             <th>DOI</th>
-            <th>Status</th>
-            <th>Further Action</th>
           </tr>
         </thead>
         <tbody>
@@ -92,15 +68,6 @@ const ArticlesPage = () => {
                   ? <a href={article.doi} style={{ color: '#4CAF50' }}>{article.doi}</a>
                   : article.doi}
               </td>
-              <td>{article.status || "Pending"}</td>
-              <td>
-                <InteractiveButtons
-                  articleId={article._id}
-                  currentStatus={article.status || "Pending"}
-                  onDelete={handleDelete} // Handle delete action
-                  onUpdate={handleStatusUpdate} // Handle status update (Approve/Reject)
-                />
-              </td>
             </tr>
           ))}
         </tbody>
@@ -109,4 +76,4 @@ const ArticlesPage = () => {
   );
 };
 
-export default ArticlesPage;
+export default ApprovedArticlesPage;

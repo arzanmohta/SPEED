@@ -2,12 +2,19 @@
 import { connectToDatabase } from '../../utils/mongodb';
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+// GET: Fetch articles, optionally filtering by status
+export async function GET(req: Request) {
   const { db } = await connectToDatabase();
+  const url = new URL(req.url);
+  const status = url.searchParams.get('status'); // Get the status from the query string (if any)
+
+  let filter = {};
+  if (status) {
+    filter = { status: status }; // Only filter by status if it's provided
+  }
 
   try {
-    // Fetch all articles from the "articles" collection
-    const articles = await db.collection('articles').find().toArray();
+    const articles = await db.collection('articles').find(filter).toArray();
     return NextResponse.json(articles, { status: 200 });
   } catch (error) {
     console.error('Error fetching articles:', error);
