@@ -1,11 +1,22 @@
-// src/app/articles/page.tsx
 "use client"; // Ensure the component is a Client Component
 
 import { useEffect, useState } from 'react';
 import InteractiveButtons from './InteractiveButtons';
 
+// Define the article interface
+interface Article {
+  _id: string;
+  title: string;
+  authors: string[];
+  source: string;
+  year: number;
+  pages: number;
+  doi: string;
+  status: string;
+}
+
 const ArticlesPage = () => {
-  const [articles, setArticles] = useState([]);
+  const [articles, setArticles] = useState<Article[]>([]);
 
   // Fetch articles from the API on component mount
   useEffect(() => {
@@ -15,7 +26,7 @@ const ArticlesPage = () => {
         if (!response.ok) {
           throw new Error('Failed to fetch articles');
         }
-        const data = await response.json();
+        const data: Article[] = await response.json();
         setArticles(data);
       } catch (error) {
         console.error('Error fetching articles:', error);
@@ -25,9 +36,18 @@ const ArticlesPage = () => {
     fetchArticles();
   }, []);
 
+  // Handle article status update (Approve/Reject)
+  const handleStatusUpdate = (id: string, status: string) => {
+    setArticles((prevArticles) =>
+      prevArticles.map((article) =>
+        article._id === id ? { ...article, status } : article
+      )
+    );
+  };
+
   // Handle article deletion
   const handleDelete = (id: string) => {
-    setArticles((prevArticles) => prevArticles.filter((article: any) => article._id.toString() !== id));
+    setArticles((prevArticles) => prevArticles.filter((article) => article._id !== id));
   };
 
   return (
@@ -48,8 +68,8 @@ const ArticlesPage = () => {
           </tr>
         </thead>
         <tbody>
-          {articles.map((article: any) => (
-            <tr key={article._id.toString()} style={{ borderBottom: '1px solid #fff' }}>
+          {articles.map((article) => (
+            <tr key={article._id} style={{ borderBottom: '1px solid #fff' }}>
               <td style={{ paddingTop: '15px', paddingBottom: '15px'}}>{article.title}</td>
               <td style={{ paddingRight: '15px'}}>
                 {Array.isArray(article.authors) 
@@ -66,7 +86,12 @@ const ArticlesPage = () => {
               </td>
               <td>{article.status || "Pending"}</td>
               <td>
-                <InteractiveButtons articleId={article._id.toString()} onDelete={handleDelete} /> {/* Pass handleDelete */}
+                <InteractiveButtons
+                  articleId={article._id}
+                  currentStatus={article.status || "Pending"}
+                  onDelete={handleDelete} // Handle delete action
+                  onUpdate={handleStatusUpdate} // Handle status update (Approve/Reject)
+                />
               </td>
             </tr>
           ))}
