@@ -1,9 +1,10 @@
 // src/app/approved-articles/page.tsx
-"use client"; // Ensure the component is a Client Component
+"use client";
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
-// Define the article interface
 interface Article {
   _id: string;
   title: string;
@@ -13,23 +14,33 @@ interface Article {
   pages: number;
   doi: string;
   status: string;
+  claim?: string;
+  evidence?: string;
 }
 
 const ApprovedArticlesPage = () => {
   const [articles, setArticles] = useState<Article[]>([]);
-  const [claims, setClaims] = useState<{ [key: string]: string }>({}); // Track claims for each article
-  const [evidence, setEvidence] = useState<{ [key: string]: string }>({}); // Track evidence for each article
+  const [claims, setClaims] = useState<{ [key: string]: string }>({});
+  const [evidence, setEvidence] = useState<{ [key: string]: string }>({});
+  const router = useRouter();
 
-  // Fetch only approved articles from the API on component mount
+  // Fetch approved articles and initialize claims and evidence states
   useEffect(() => {
     const fetchApprovedArticles = async () => {
       try {
-        const response = await fetch('/api/articles?status=Approved'); // Query for only approved articles
-        if (!response.ok) {
-          throw new Error('Failed to fetch approved articles');
-        }
+        const response = await fetch('/api/articles?status=Approved');
         const data: Article[] = await response.json();
         setArticles(data);
+
+        // Initialize claims and evidence with existing data
+        const claimsObj: { [key: string]: string } = {};
+        const evidenceObj: { [key: string]: string } = {};
+        data.forEach(article => {
+          claimsObj[article._id] = article.claim || '';
+          evidenceObj[article._id] = article.evidence || '';
+        });
+        setClaims(claimsObj);
+        setEvidence(evidenceObj);
       } catch (error) {
         console.error('Error fetching approved articles:', error);
       }
@@ -40,24 +51,52 @@ const ApprovedArticlesPage = () => {
 
   // Handle claim input changes
   const handleClaimChange = (id: string, value: string) => {
-    setClaims((prevClaims) => ({
-      ...prevClaims,
-      [id]: value, // Update the claim for the specific article
-    }));
+    setClaims(prevClaims => ({ ...prevClaims, [id]: value }));
   };
 
   // Handle evidence input changes
   const handleEvidenceChange = (id: string, value: string) => {
-    setEvidence((prevEvidence) => ({
-      ...prevEvidence,
-      [id]: value, // Update the evidence for the specific article
-    }));
+    setEvidence(prevEvidence => ({ ...prevEvidence, [id]: value }));
+  };
+
+  // Handle save action and send updated claim and evidence to the backend
+  const handleSave = async () => {
+    try {
+      // Save each article's claim and evidence
+      for (const article of articles) {
+        const articleId = article._id;
+        const response = await fetch(`/api/articles/${articleId}/claim-evidence`, { // Ensure this path matches the API route
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            claim: claims[articleId] || '',
+            evidence: evidence[articleId] || ''
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to save claim and evidence');
+        }
+      }
+
+      // Redirect to the final results page after saving
+      router.push('/final-results');
+    } catch (error) {
+      console.error('Error saving claim and evidence:', error);
+    }
   };
 
   return (
     <div style={{ padding: '20px', backgroundColor: '#000', color: '#fff' }}>
       <h1 style={{ color: '#fff', fontSize: '2rem', fontWeight: 'bold' }}>Approved Articles</h1>
       <p>Page containing a table of approved articles:</p>
+
+      <Link href="/final-results" target="_blank" style={{ color: '#4CAF50', textDecoration: 'none', marginBottom: '20px', display: 'inline-block' }}>
+        <u>View Final Articles</u>
+      </Link>
+
       <table style={{ tableLayout: 'fixed', width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
         <thead>
           <tr>
@@ -88,39 +127,35 @@ const ApprovedArticlesPage = () => {
                   ? <a href={article.doi} style={{ color: '#4CAF50' }}>{article.doi}</a>
                   : article.doi}
               </td>
-              
-              {/* Single-line Claim input column */}
               <td>
                 <textarea
-                  value={claims[article._id] || ''} // Display the current claim value
+                  value={claims[article._id] || ''}
                   onChange={(e) => handleClaimChange(article._id, e.target.value)}
                   placeholder="Enter claim"
-                  rows={1} // Single line height
+                  rows={1}
                   style={{
                     width: '100%',
                     padding: '8px',
-                    backgroundColor: '#000', // Black background
-                    color: '#fff', // White text
-                    textAlign: 'center', // Center text
-                    resize: 'none', // Disable resizing
+                    backgroundColor: '#000',
+                    color: '#fff',
+                    textAlign: 'center',
+                    resize: 'none',
                   }}
                 />
               </td>
-              
-              {/* Single-line Evidence input column */}
               <td>
                 <textarea
-                  value={evidence[article._id] || ''} // Display the current evidence value
+                  value={evidence[article._id] || ''}
                   onChange={(e) => handleEvidenceChange(article._id, e.target.value)}
                   placeholder="Enter evidence"
-                  rows={1} // Single line height
+                  rows={1}
                   style={{
                     width: '100%',
                     padding: '8px',
-                    backgroundColor: '#000', // Black background
-                    color: '#fff', // White text
-                    textAlign: 'center', // Center text
-                    resize: 'none', // Disable resizing
+                    backgroundColor: '#000',
+                    color: '#fff',
+                    textAlign: 'center',
+                    resize: 'none',
                   }}
                 />
               </td>
@@ -128,6 +163,20 @@ const ApprovedArticlesPage = () => {
           ))}
         </tbody>
       </table>
+
+      <button
+        onClick={handleSave}
+        style={{
+          padding: '10px 20px',
+          backgroundColor: '#4CAF50',
+          color: '#fff',
+          border: 'none',
+          cursor: 'pointer',
+          marginTop: '20px',
+        }}
+      >
+        Save and View Final Results
+      </button>
     </div>
   );
 };

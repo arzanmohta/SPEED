@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import Link from 'next/link';
 
 const NewArticlePage = () => {
   const [title, setTitle] = useState('');
@@ -139,6 +140,11 @@ const NewArticlePage = () => {
           Submit
         </button>
       </form>
+      <br></br>
+      <br></br>
+      <Link href="/articles" target="_blank" style={{ color: '#4CAF50', textDecoration: 'none', marginBottom: '20px', display: 'inline-block' }}>
+        <u>View Unmoderated Articles</u>
+      </Link>
     </div>
   );
 };

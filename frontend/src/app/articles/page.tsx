@@ -58,8 +58,8 @@ const ArticlesPage = () => {
       <p>Page containing a table of articles:</p>
 
       {/* Link to the Approved Articles page */}
-      <Link href="/approved-articles" style={{ color: '#4CAF50', textDecoration: 'none', marginBottom: '20px', display: 'inline-block' }}>
-        View Approved Articles
+      <Link href="/approved-articles" target="_blank" style={{ color: '#4CAF50', textDecoration: 'none', marginBottom: '20px', display: 'inline-block' }}>
+        <u>View Approved Articles</u>
       </Link>
 
       <table style={{ tableLayout: 'fixed', width: '100%', borderCollapse: 'collapse', color: '#fff' }}>
