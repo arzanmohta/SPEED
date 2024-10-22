@@ -57,7 +57,7 @@ const NewArticlePage = () => {
       setDoi('');
       setErrorMessage('');
       setSuccessMessage('Article submitted successfully!');
-    } catch (error) {
+    } catch {
       setErrorMessage('Failed to submit the article. Please try again.');
     }
   };
